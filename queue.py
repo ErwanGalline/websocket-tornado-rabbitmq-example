@@ -8,8 +8,8 @@ pika.log = logging.getLogger(__name__)
 
 class PikaClient(object):
     INPUT_QUEUE_NAME = 'in_queue'
-    def __init__(self, io_loop):
-        self.io_loop = io_loop
+    def __init__(self):
+        # self.io_loop = io_loop
         self.received_message_counter = 0
         self.sent_message_counter = 0
         self.start_time = -1
@@ -29,7 +29,7 @@ class PikaClient(object):
         cred = pika.PlainCredentials('guest', 'guest')
         param = pika.ConnectionParameters(
             host='localhost',
-            port=5672,
+            port=5673,
             virtual_host='/',
             credentials=cred
         )
@@ -43,7 +43,7 @@ class PikaClient(object):
         self.in_channel = self.connection.channel(self.on_conn_open)
 
     def on_conn_open(self, channel):
-        self.in_channel.exchange_declare(exchange='tornado_input', type='topic')
+        self.in_channel.exchange_declare(exchange='tornado_input', exchange_type='topic')
         channel.queue_declare(callback=self.on_input_queue_declare, queue=self.INPUT_QUEUE_NAME)
 
     def on_input_queue_declare(self, queue):
@@ -55,12 +55,15 @@ class PikaClient(object):
     def register_websocket(self, sess_id, ws):
         self.websockets[sess_id] = ws
         channel = self.create_out_channel(sess_id)
+        print("New web Socket registered in PIka client : " + sess_id)
+        print("Channel :" + str(channel))
 
 
     def unregister_websocket(self, sess_id):
         del self.websockets[sess_id]
         if sess_id in self.out_channels:
             self.out_channels[sess_id].close()
+        print("Websocket unregistred ")
         print("Time: %s, In: %s Out: %s" % (int(time.time() - self.start_time),
                                                   self.received_message_counter,
                                                   self.sent_message_counter) )
@@ -76,6 +79,9 @@ class PikaClient(object):
                                   auto_delete=True,
                                   exclusive=True)
 
+        print("--------------")
+        print("New queue created, id  : " + sess_id)
+        print("--------------")
         self.connection.channel(on_output_channel_creation)
 
 

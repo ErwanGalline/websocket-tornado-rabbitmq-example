@@ -25,6 +25,7 @@ class SocketHandler(websocket.WebSocketHandler):
     def open(self):
         self.sess_id = uuid4().hex
         self.application.pc.register_websocket(self._get_sess_id(), self)
+        print("Server : new socket connexion , ID : " + self._get_sess_id())
 
     def on_message(self, message):
         self.application.pc.redirect_incoming_message(self._get_sess_id(), message)
@@ -60,7 +61,7 @@ def runserver():
     my_ioloop = ioloop.IOLoop.instance()
 
     # setup pika client
-    pc = PikaClient(my_ioloop)
+    pc = PikaClient()
     app.pc = pc
     pc.connect()
     app.listen(9001)

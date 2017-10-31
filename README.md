@@ -1,3 +1,8 @@
+##Note Erwan
+
+Good queue/socketHandler binding example.
+
+
 ##WebSocket - Tornado - RabbitMQ - Worker Process Example
 
 This example demonstrates realtime bidirectional communication between multiple browser clients and background worker processes over Tornado / Pika / RabbitMQ.

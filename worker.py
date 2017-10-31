@@ -15,19 +15,22 @@ class Worker(object):
     def __init__(self):
         self.connect()
         signal.signal(signal.SIGTERM, self.exit)
+        print("New worker initialized ...")
 
     def exit(self, signal=None, frame=None):
         self.input_channel.close()
         self.output_channel.close()
         self.connection.close()
+        print("Worker says bybye ...")
         sys.exit(0)
 
     def connect(self):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', port =5673))
         self.output_channel = self.connection.channel()
         self.input_channel = self.connection.channel()
 
-        self.input_channel.exchange_declare(exchange='tornado_input', type='topic')
+        print("New worker connecting ...")
+        self.input_channel.exchange_declare(exchange='tornado_input', exchange_type='topic')
         self.input_channel.queue_declare(queue=self.INPUT_QUEUE_NAME)
         self.input_channel.queue_bind(exchange='tornado_input', queue=self.INPUT_QUEUE_NAME)
 
@@ -60,6 +63,7 @@ class Worker(object):
         self.output_channel.basic_publish(exchange='',
                                           routing_key=sess_id,
                                           body=body)
+        print("Worker mange message ...")
 
     def worker(self, sess_id):
         # you can do your actual work here
@@ -89,6 +93,7 @@ def manage_processes():
     while 1:
         try:
             sleep(1)
+            print("Je sleep ...")
         except KeyboardInterrupt:
             print("Keyboard interrupt, exiting")
             sys.exit(0)
